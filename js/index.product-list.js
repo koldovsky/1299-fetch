@@ -1,38 +1,13 @@
-const products = [
-  {
-    id: "1",
-    title: "Baby Yoda",
-    description:
-      "A cute sticker of Baby Yoda from the popular Star Wars series.",
-    image: "img/baby-yoda.svg",
-    price: 9.99,
-  },
-  {
-    id: "2",
-    title: "Banana",
-    description: "A fun and quirky banana sticker perfect for fruit lovers.",
-    image: "img/banana.svg",
-    price: 4.99,
-  },
-  {
-    id: "3",
-    title: "Girl",
-    description:
-      "A stylish and empowering sticker featuring a modern girl design.",
-    image: "img/girl.svg",
-    price: 6.99,
-  },
-  {
-    id: "4",
-    title: "Viking",
-    description:
-      "A fierce and adventurous Viking sticker to showcase your warrior spirit.",
-    image: "img/viking.svg",
-    price: 7.99,
-  },
-];
+const response = await fetch('api/products.json');
+const products = await response.json();
+renderProducts(products);
 
-function renderProducts(products) {
+// fetch('api/products.json')
+//  .then( response => response.json() )
+//  .then( products => renderProducts(products) );
+
+
+function renderProducts(products, rate = 1) {
   let productsHtml = "";
   for (const product of products) {
     productsHtml += `
@@ -46,7 +21,7 @@ function renderProducts(products) {
                     Info
                 </button>
                 <button class="products__button products__button--buy button button-card">
-                    Buy - ${product.price}
+                    Buy - ${(product.price * rate).toFixed(2)}
                 </button>
             </div>
     </article>`;
@@ -54,4 +29,15 @@ function renderProducts(products) {
   document.querySelector('.products__list').innerHTML = productsHtml;
 }
 
-renderProducts(products);
+let currencies;
+async function changeCurrency() {
+  if (!currencies) {
+    const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+    currencies = await response.json();
+  }
+  const userSelectedCurrency = document.querySelector('.products__currency').value;
+  const rate = currencies.rates[userSelectedCurrency];
+  renderProducts(products, rate);
+}
+
+document.querySelector('.products__currency').addEventListener('change', changeCurrency);
